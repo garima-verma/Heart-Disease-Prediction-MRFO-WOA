@@ -1,0 +1,38 @@
+#!/bin/bash
+# Script to reproduce all 5-fold experiments with fixed random seeds
+# Usage: bash run_all_folds.sh
+
+set -e  # exit on error
+
+# Define global random seeds for reproducibility
+SEED=42
+FOLDS=5
+
+echo "========================================="
+echo " Running 5-Fold Cross Validation Pipeline "
+echo " Global Seed = $SEED"
+echo "========================================="
+
+# Create results directory if not exists
+mkdir -p results
+
+# Loop over folds
+for ((i=1; i<=FOLDS; i++))
+do
+   echo "---------- Fold $i ----------"
+   python run_experiment.py \
+        --fold $i \
+        --n_folds $FOLDS \
+        --seed $SEED \
+        --save_path results/fold_${i}.json
+
+   echo "Fold $i completed. Results saved in results/fold_${i}.json"
+done
+
+# Combine all folds into one summary file
+echo "Combining all fold results..."
+python utils/aggregate_results.py --input_dir results --output_file results/summary.json
+
+echo "========================================="
+echo " All folds completed. Summary available in results/summary.json "
+echo "========================================="
